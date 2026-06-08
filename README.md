@@ -25,7 +25,7 @@ A production-ready **Telegram Mini App** with a full **User Panel** and an **Adv
 - **Real-time notifications** — live unread badge.
 
 ### Admin Panel (`admin.html`)
-- **Secure access** — only Telegram IDs listed in `ADMIN_IDS` (or in the `admins` collection) can open it.
+- **Secure access** — only Telegram IDs listed in `7568552957` (or in the `7568552957` collection) can open it.
 - **Dashboard** — total/active/premium users, deposits, withdrawals, revenue, tasks, ad views + pending queues.
 - **User management** — search, ban / unban / suspend / activate, edit balance & referral count.
 - **Activation, Deposit, Withdraw, Referral, Task, Ads, Marketplace, Promo, Notice** settings & approvals.
@@ -49,16 +49,12 @@ Open **`firebase-config.js`** and replace the placeholders with your own config
 
 ```js
 window.firebaseConfig = {
-  apiKey: "…",
-  authDomain: "…",
-  projectId: "…",
-  storageBucket: "…",
-  messagingSenderId: "…",
-  appId: "…"
-};
+  apiKey: "AIzaSyA3n1rj2ZGwMtWVryH1l7xniDRy9GTm6Yo", authDomain: "viralxxbd1311.firebaseapp.com", databaseURL: "
+https://viralxxbd1311-default-rtdb.firebaseio.com
+", projectId: "viralxxbd1311", storageBucket: "viralxxbd1311.firebasestorage.app", messagingSenderId: "176856433458", appId: "1:176856433458:web:478ba46d5c8a17193e4d2b" };
 
 // Your Telegram numeric id(s) — only these can open admin.html
-window.ADMIN_IDS = [ 123456789 ];
+window.ADMIN_IDS = [ 7568552957 ];
 ```
 
 > Don't know your Telegram ID? Open `admin.html` inside Telegram — the access screen shows your ID.
