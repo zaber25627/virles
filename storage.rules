@@ -1,0 +1,38 @@
+rules_version = '2';
+
+// ============================================================
+//  FIREBASE STORAGE RULES — Premium Telegram Mini App
+//  - Anyone signed in can read images (listings, screenshots)
+//  - Users can only upload into their own folder
+//  - Images only, max 5 MB
+// ============================================================
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() { return request.auth != null; }
+    function isImage() { return request.resource.contentType.matches('image/.*'); }
+    function underLimit() { return request.resource.size < 5 * 1024 * 1024; }
+
+    // Deposit payment screenshots: /deposits/{uid}/...
+    match /deposits/{uid}/{file=**} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == uid && isImage() && underLimit();
+    }
+
+    // Marketplace listing images: /listings/{uid}/...
+    match /listings/{uid}/{file=**} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == uid && isImage() && underLimit();
+    }
+
+    // App/branding assets (admin uploads via console)
+    match /app/{file=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
