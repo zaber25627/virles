@@ -1,0 +1,136 @@
+rules_version = '2';
+
+// ============================================================
+//  FIRESTORE SECURITY RULES — Premium Telegram Mini App
+//  - Authenticated (anonymous) users manage only their own data
+//  - Admins (docs in /admins/{uid}) have full read/write
+//  - Public/config collections are read-only for users
+// ============================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // An admin is any signed-in user with a doc at /admins/{their uid}
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Only these fields may be changed by the user themselves on their own doc.
+    // Balances, activation & status are admin/server controlled.
+    function userSelfEditable() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['firstName','lastName','username','photoUrl','lastSeen','device','adsWatchedToday']);
+    }
+
+    // ---------- USERS ----------
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isAdmin() || (isSignedIn() && userSelfEditable());
+      allow delete: if isAdmin();
+    }
+
+    // ---------- ADMINS ----------
+    match /admins/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ---------- PUBLIC CONFIG (read-only for users) ----------
+    match /settings/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /settings_depositMethods/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /settings_withdrawMethods/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /tasks/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /notices/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /promoCodes/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ---------- USER-SCOPED REQUESTS ----------
+    // Users may create requests for themselves; only admins change status.
+    match /deposits/{id} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+    match /withdrawals/{id} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+    match /activationRequests/{id} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------- MARKETPLACE ----------
+    match /marketplaceListings/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.sellerId == request.auth.uid
+                    && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin() ||
+        (isSignedIn() && resource.data.sellerId == request.auth.uid);
+    }
+
+    // ---------- REFERRALS ----------
+    match /referrals/{id} {
+      allow read: if isAdmin() ||
+        (isSignedIn() && (resource.data.referrerId == request.auth.uid || resource.data.referredId == request.auth.uid));
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------- NOTIFICATIONS ----------
+    match /notifications/{id} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn();
+      // user may only flip the read flag on their own notifications
+      allow update: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']));
+      allow delete: if isAdmin();
+    }
+
+    // ---------- TRANSACTIONS (ledger) ----------
+    match /transactions/{id} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------- ACTIVITY LOGS ----------
+    match /activityLogs/{id} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // Deny everything else by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

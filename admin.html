@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#070b18" />
+  <title>Admin Panel</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: "class", theme:{ extend:{ fontFamily:{ sans:["Inter","system-ui","sans-serif"] } } } };</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+</head>
+<body>
+  <div class="bg-orbs"><span></span><span></span><span></span></div>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="logo-badge" id="loaderLogo">PM</div>
+    <div class="text-center"><div class="text-xl font-extrabold brand-text">Admin Panel</div>
+    <div class="text-soft text-xs mt-1">Verifying access…</div></div>
+    <div class="loader-bar"><i></i></div>
+  </div>
+
+  <!-- ACCESS DENIED -->
+  <div id="denied" class="hide fixed inset-0 z-50 flex items-center justify-center p-6">
+    <div class="glass-strong rounded-3xl p-8 text-center max-w-sm">
+      <div class="text-5xl mb-3">🚫</div>
+      <h1 class="text-xl font-extrabold">Access Denied</h1>
+      <p class="text-soft text-sm mt-2">Only admins can access this panel. Add your Telegram ID to <b>ADMIN_IDS</b> in firebase-config.js, or to the <b>admins</b> collection.</p>
+      <p id="myId" class="text-[11px] text-soft mt-3"></p>
+    </div>
+  </div>
+
+  <!-- ADMIN SHELL -->
+  <div id="admin" class="hide relative z-10 min-h-screen md:flex">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="hidden md:block md:w-64 md:shrink-0 p-3 md:h-screen md:sticky md:top-0">
+      <div class="glass rounded-2xl p-3 h-full flex flex-col">
+        <div class="flex items-center gap-2 px-1 py-2 mb-2">
+          <div class="w-9 h-9 rounded-xl brand-grad grid place-items-center text-white font-extrabold" id="sideLogo">PM</div>
+          <div><div class="font-bold text-sm leading-tight">Admin Panel</div><div class="text-[10px] text-soft" id="sideName">Premium</div></div>
+        </div>
+        <nav id="navList" class="flex-1 overflow-y-auto no-scrollbar space-y-1 text-sm"></nav>
+        <a href="index.html" class="chip rounded-xl px-3 py-2 text-center text-xs font-semibold mt-2">↗ Open User App</a>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="flex-1 min-w-0">
+      <header class="sticky top-0 z-30 p-3">
+        <div class="glass rounded-2xl px-3 py-2.5 flex items-center gap-3">
+          <button id="menuBtn" class="md:hidden w-9 h-9 rounded-xl chip grid place-items-center">☰</button>
+          <div class="flex-1"><div class="font-bold" id="pageTitle">Dashboard</div></div>
+          <button id="adminTheme" class="w-9 h-9 rounded-xl chip grid place-items-center">🌙</button>
+        </div>
+      </header>
+      <main id="adminContent" class="p-3 pb-10"></main>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+
+  <script src="firebase-config.js"></script>
+  <script src="assets/js/firebase-init.js"></script>
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/db.js"></script>
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>
